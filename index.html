@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>간단한 카운트다운</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; background:#f7f7f8; }
+    .timer { text-align:center; }
+    .time { font-size: clamp(48px, 10vw, 120px); letter-spacing: .04em; font-weight: 700; }
+    .sub { color:#666; margin-top:.5rem; font-size:14px; }
+    button { margin-top:1rem; padding:.6rem 1rem; border:0; border-radius:10px; background:#111; color:#fff; font-weight:600; cursor:pointer; }
+    button:disabled { background:#bbb; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="timer">
+    <div id="display" class="time">05:00</div>
+    <div class="sub">페이지를 열면 자동으로 5분 카운트 시작</div>
+    <button id="restart">다시 시작</button>
+  </div>
+
+  <script>
+    // ⏱ 설정: 총 카운트다운 시간(초)
+    const DURATION_SEC = 5 * 60; // 5분 → 필요에 따라 변경
+
+    const displayEl = document.getElementById('display');
+    const restartBtn = document.getElementById('restart');
+
+    let endAt = null;
+    let rafId = null;
+    let ticking = false;
+
+    function format(ms) {
+      const totalSec = Math.max(0, Math.ceil(ms / 1000));
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function render() {
+      const now = Date.now();
+      const remaining = endAt - now;
+      displayEl.textContent = format(remaining);
+
+      if (remaining <= 0) {
+        ticking = false;
+        restartBtn.disabled = false;
+        cancelAnimationFrame(rafId);
+        displayEl.textContent = format(0);
+        // 필요 없으면 아래 alert를 주석 처리
+        alert('카운트다운 완료!');
+        return;
+      }
+      rafId = requestAnimationFrame(render);
+    }
+
+    function startCountdown() {
+      if (ticking) return;
+      endAt = Date.now() + DURATION_SEC * 1000;
+      restartBtn.disabled = true;
+      ticking = true;
+      render();
+    }
+
+    restartBtn.addEventListener('click', () => {
+      startCountdown();
+    });
+
+    // 페이지 로드와 동시에 시작
+    startCountdown();
+  </script>
+</body>
+</html>
